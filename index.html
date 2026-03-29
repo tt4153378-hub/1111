@@ -2,204 +2,182 @@
 <html lang="vi" translate="no">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ABG Mentor Pro - Sơ đồ tư duy Chuyên khoa</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABG Mentor Pro - Chuyên Khoa Sâu</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.23.0/cytoscape.min.js"></script>
     <style>
-        :root { --primary: #0056b3; --accent: #e3f2fd; --danger: #d32f2f; --success: #2e7d32; --text: #3c4043; --card-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8eaed; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        .app-card { width: 100%; max-width: 900px; background: white; border-radius: 20px; box-shadow: var(--card-shadow); overflow: hidden; }
-        .header { background: var(--primary); color: white; padding: 25px; text-align: center; }
-        .header h1 { margin: 0; font-size: 1.4rem; text-transform: uppercase; letter-spacing: 1px; }
-        .content { padding: 20px; }
+        :root { --primary: #0056b3; --danger: #d32f2f; --bg: #f4f6f8; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: var(--primary); color: white; padding: 30px; text-align: center; }
+        .content { padding: 30px; }
+        .input-row { display: flex; gap: 15px; margin-bottom: 20px; justify-content: center; }
+        .input-group { flex: 1; max-width: 200px; }
+        label { font-weight: bold; font-size: 0.9rem; display: block; margin-bottom: 8px; color: #555; }
+        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        .btn { width: 100%; max-width: 400px; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: block; margin: 0 auto; }
         
-        /* Giao diện nhập liệu */
-        .input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .input-group { margin-bottom: 10px; }
-        label { display: block; font-size: 0.8rem; font-weight: bold; color: #5f6368; margin-bottom: 4px; }
-        input { width: 100%; padding: 12px; border: 2px solid #dadce0; border-radius: 10px; box-sizing: border-box; font-size: 1.1rem; }
-        input:focus { border-color: var(--primary); outline: none; background: #f8f9fa; }
-        .btn-calc { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-calc:active { transform: scale(0.98); }
-
-        /* Kết quả và Mạng lưới */
-        #resultArea { display: none; margin-top: 25px; animation: slideUp 0.4s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        #resultArea { display: none; margin-top: 30px; border-top: 3px solid #eee; padding-top: 20px; }
+        #cy { width: 100%; height: 450px; background: #fff; border: 1px solid #eee; border-radius: 10px; margin: 20px 0; }
         
-        .diag-box { padding: 20px; border-radius: 12px; background: #f8f9fa; border-left: 8px solid var(--primary); margin-bottom: 20px; }
-        .diag-title { font-size: 1.5rem; font-weight: 800; color: var(--danger); margin-bottom: 8px; display: block; }
-        
-        #cy { width: 100%; height: 350px; background: #fafafa; border: 1px solid #dadce0; border-radius: 12px; margin-bottom: 20px; }
-        
-        .treat-section { background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #dadce0; }
-        .treat-title { color: #202124; font-weight: bold; font-size: 1rem; display: flex; align-items: center; gap: 8px; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid # dadce0; padding-bottom: 8px; }
-        .treat-content { font-size: 1rem; line-height: 1.7; color: #3c4043; text-align: justify; }
-        .treat-content p { margin: 0 0 15px 0; }
-        .footer { padding: 20px; text-align: center; font-size: 0.75rem; color: #70757a; border-top: 1px solid #eee; }
+        .diag-header { background: #fff5f5; border-left: 10px solid var(--danger); padding: 20px; margin-bottom: 25px; border-radius: 0 10px 10px 0; }
+        .treat-card { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 25px; line-height: 1.8; text-align: justify; }
+        .treat-card h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; font-size: 1.3rem; }
+        .treat-card h3 { color: #d32f2f; font-size: 1.1rem; margin-top: 20px; }
+        .treat-card p { margin-bottom: 15px; font-size: 1.05rem; }
     </style>
 </head>
 <body>
 
-<div class="app-card">
+<div class="container">
     <div class="header">
-        <h1>ABG Mentor Pro V5.0</h1>
-        <small>Phân tích Mạng lưới Chuyên khoa sâu</small>
+        <h1>HỆ THỐNG PHÂN TÍCH KHÍ MÁU CHUYÊN SÂU</h1>
+        <p>Phiên bản dành cho bác sĩ lâm sàng - Tối ưu hóa sơ đồ mạng lưới</p>
     </div>
 
     <div class="content">
         <div class="input-row">
             <div class="input-group"><label>pH</label><input type="number" id="ph" step="0.01" placeholder="7.xx"></div>
-            <div class="input-group"><label>PaCO2 (mmHg)</label><input type="number" id="paco2" placeholder="35-45"></div>
-            <div class="input-group"><label>HCO3- (mmol/L)</label><input type="number" id="hco3" placeholder="22-26"></div>
+            <div class="input-group"><label>PaCO2</label><input type="number" id="paco2" placeholder="mmHg"></div>
+            <div class="input-group"><label>HCO3-</label><input type="number" id="hco3" placeholder="mmol/L"></div>
         </div>
-        <button class="btn-calc" onclick="analyzeABG()">PHÂN TÍCH MẠNG LƯỚI LÂM SÀNG</button>
+        <button class="btn" onclick="runAnalysis()">PHÂN TÍCH THUẬT TOÁN</button>
 
         <div id="resultArea">
-            <div class="diag-box">
-                <span id="diagTitle" class="diag-title"></span>
-                <span id="diagLogic" style="color: #5f6368; font-size: 0.95rem;"></span>
+            <div class="diag-header">
+                <h2 id="outTitle" style="margin:0; color:var(--danger)"></h2>
+                <p id="outLogic" style="margin:10px 0 0 0; font-weight:bold; color:#666;"></p>
             </div>
-            
+
             <div id="cy"></div>
 
-            <div class="treat-section">
-                <div class="treat-title">⚠️ HƯỚNG DẪN XỬ TRÍ CHUYÊN KHOA</div>
-                <div id="treatContent" class="treat-content"></div>
+            <div class="treat-card">
+                <h2>📚 PHÁC ĐỒ XỬ TRÍ CHI TIẾT</h2>
+                <div id="outTreat"></div>
             </div>
         </div>
-    </div>
-
-    <div class="footer">
-        © 2026 ABG Mentor - Công cụ hỗ trợ học tập chuyên sâu.<br>
-        Lưu ý: Luôn dựa vào lâm sàng của bệnh nhân để ra quyết định cuối cùng.
     </div>
 </div>
 
 <script>
-    let cy = null; // Khởi tạo cytoscape
-
-    // Hàm khởi tạo sơ đồ mạng lưới tư duy
-    function initCyMap() {
+    let cy;
+    function initGraph() {
         cy = cytoscape({
             container: document.getElementById('cy'),
             style: [
-                { selector: 'node', style: { 'label': 'data(label)', 'background-color': '#dadce0', 'color': '#3c4043', 'text-halign': 'center', 'text-valign': 'center', 'font-size': '11px', 'width': '80px', 'height': '40px', 'border-width': 1, 'border-color': '#dadce0' } },
-                { selector: 'edge', style: { 'width': 1, 'line-color': '#ddd', 'target-arrow-color': '#ddd', 'target-arrow-shape': 'triangle', 'curve-style': 'bezier', 'font-size': '10px', 'label': 'data(label)' } },
-                { selector: '.active', style: { 'background-color': '#fff3cd', 'border-color': '#fbc02d', 'color': '#663c00', 'border-width': 3, 'font-weight': 'bold' } },
-                { selector: '.active-edge', style: { 'line-color': '#fbc02d', 'target-arrow-color': '#fbc02d', 'width': 3 } }
+                { selector: 'node', style: { 'label': 'data(label)', 'text-valign': 'center', 'text-halign': 'center', 'background-color': '#fff', 'border-width': 2, 'border-color': '#999', 'width': 120, 'height': 50, 'shape': 'round-rectangle', 'font-size': '12px', 'text-wrap': 'wrap' } },
+                { selector: 'edge', style: { 'width': 2, 'line-color': '#ccc', 'target-arrow-color': '#ccc', 'target-arrow-shape': 'triangle', 'curve-style': 'bezier', 'label': 'data(label)', 'font-size': '10px' } },
+                { selector: '.highlight', style: { 'background-color': '#ffffcc', 'border-color': '#f1c40f', 'border-width': 4, 'font-weight': 'bold' } },
+                { selector: '.path', style: { 'line-color': '#f1c40f', 'target-arrow-color': '#f1c40f', 'width': 4 } }
             ],
-            layout: { name: 'breadthfirst', directed: true, roots: '#root', padding: 10 }
+            layout: { name: 'preset' }
         });
 
-        // Định nghĩa các nút (Nodes)
+        // Định nghĩa vị trí các Node để không bị chồng lấp
         cy.add([
-            { group: 'nodes', data: { id: 'root', label: 'BẮT ĐẦU: pH' } },
-            { group: 'nodes', data: { id: 'toan', label: 'pH < 7.35' } },
-            { group: 'nodes', data: { id: 'kiem', label: 'pH > 7.45' } },
-            { group: 'nodes', data: { id: 'toanHH', label: 'PaCO2 > 45\nToan HH' } },
-            { group: 'nodes', data: { id: 'toanCH', label: 'HCO3 < 22\nToan CH' } },
-            { group: 'nodes', data: { id: 'kiemHH', label: 'PaCO2 < 35\nKiềm HH' } },
-            { group: 'nodes', data: { id: 'kiemCH', label: 'HCO3 > 26\nKiềm CH' } },
-            { group: 'nodes', data: { id: 'winter', label: 'Tính Winter\n(Bù trừ?)' } }
+            { data: { id: 'n1', label: 'BẮT ĐẦU\n(pH)' }, position: { x: 400, y: 50 } },
+            { data: { id: 'n2', label: 'TOAN\n(pH < 7.35)' }, position: { x: 250, y: 150 } },
+            { data: { id: 'n3', label: 'KIỀM\n(pH > 7.45)' }, position: { x: 550, y: 150 } },
+            { data: { id: 'n4', label: 'TOAN HÔ HẤP\n(CO2 > 45)' }, position: { x: 150, y: 280 } },
+            { data: { id: 'n5', label: 'TOAN CH.HÓA\n(HCO3 < 22)' }, position: { x: 350, y: 280 } },
+            { data: { id: 'n6', label: 'KIỀM HÔ HẤP\n(CO2 < 35)' }, position: { x: 450, y: 280 } },
+            { data: { id: 'n7', label: 'KIỀM CH.HÓA\n(HCO3 > 26)' }, position: { x: 650, y: 280 } },
+            { data: { id: 'n8', label: 'KIỂM TRA BÙ\n(Winter/Hệ số)' }, position: { x: 400, y: 400 } }
         ]);
 
-        // Định nghĩa các cạnh (Edges)
         cy.add([
-            { group: 'edges', data: { id: 'e1', source: 'root', target: 'toan', label: '< 7.35' } },
-            { group: 'edges', data: { id: 'e2', source: 'root', target: 'kiem', label: '> 7.45' } },
-            { group: 'edges', data: { id: 'e3', source: 'toan', target: 'toanHH', label: 'CO2 ↑' } },
-            { group: 'edges', data: { id: 'e4', source: 'toan', target: 'toanCH', label: 'HCO3 ↓' } },
-            { group: 'edges', data: { id: 'e5', source: 'toanCH', target: 'winter' } },
-            { group: 'edges', data: { id: 'e6', source: 'kiem', target: 'kiemHH', label: 'CO2 ↓' } },
-            { group: 'edges', data: { id: 'e7', source: 'kiem', target: 'kiemCH', label: 'HCO3 ↑' } }
+            { data: { id: 'e1', source: 'n1', target: 'n2', label: 'Thấp' } },
+            { data: { id: 'e2', source: 'n1', target: 'n3', label: 'Cao' } },
+            { data: { id: 'e3', source: 'n2', target: 'n4', label: 'CO2 ↑' } },
+            { data: { id: 'e4', source: 'n2', target: 'n5', label: 'HCO3 ↓' } },
+            { data: { id: 'e5', source: 'n3', target: 'n6', label: 'CO2 ↓' } },
+            { data: { id: 'e6', source: 'n3', target: 'n7', label: 'HCO3 ↑' } },
+            { data: { id: 'e7', source: 'n5', target: 'n8' } }
         ]);
-        
-        cy.layout({ name: 'breadthfirst', directed: true, roots: '#root' }).run();
     }
 
-    // Khởi tạo sơ đồ khi load trang
-    window.onload = initCyMap;
+    window.onload = initGraph;
 
-    function analyzeABG() {
-        const ph = parseFloat(document.getElementById('ph').value);
-        const paco2 = parseFloat(document.getElementById('paco2').value);
-        const hco3 = parseFloat(document.getElementById('hco3').value);
+    function runAnalysis() {
+        const p = parseFloat(document.getElementById('ph').value);
+        const c = parseFloat(document.getElementById('paco2').value);
+        const h = parseFloat(document.getElementById('hco3').value);
 
-        if (isNaN(ph) || isNaN(paco2) || isNaN(hco3)) { alert("Vui lòng nhập đầy đủ các thông số pH, PaCO2 và HCO3-!"); return; }
+        if (isNaN(p) || isNaN(c) || isNaN(h)) { alert("Nhập đủ thông số bác sĩ ơi!"); return; }
 
-        const area = document.getElementById('resultArea');
-        const treat = document.getElementById('treatContent');
-        area.style.display = "block";
-        
-        // Reset sơ đồ
-        cy.elements().removeClass('active').removeClass('active-edge');
+        document.getElementById('resultArea').style.display = "block";
+        cy.elements().removeClass('highlight').removeClass('path');
 
-        let title = "", logic = "", treatTxt = "", activePath = ['root'];
+        let title = "", logic = "", treat = "", nodes = ['n1'], edges = [];
 
-        // Logic phân tích
-        if (ph < 7.35) {
-            activePath.push('toan');
-            if (paco2 > 45) {
-                activePath.push('toanHH'); cy.getElementById('e3').addClass('active-edge');
-                title = "TOAN HÔ HẤP";
-                logic = "Do phổi không thải được CO2.";
-                treatTxt = `
-                    <p><strong>1. Đánh giá cấp cứu (ABC):</strong> Trước tiên, cần đánh giá đường thở, nhịp thở và tuần hoàn của bệnh nhân. Quan sát dấu hiệu suy hô hấp nặng: thở co kéo, tím tái, co giật, hoặc tri giác lơ mơ. Đặt ngay đường truyền tĩnh mạch và theo dõi SpO2 liên tục.</p>
-                    <p><strong>2. Khai thông đường thở:</strong> Nguyên nhân hàng đầu gây toan hô hấp cấp là tắc nghẽn. Cần hút đờm dãi, loại bỏ dị vật, hoặc đặt tư thế cổ ngửa nếu cần thiết. Nếu bệnh nhân nằm trong bệnh cảnh COPD hoặc Hen phế quản cấp, cần khí dung thuốc giãn phế quản (SABA/SAMA) ngay lập tức.</p>
-                    <p><strong>3. Hỗ trợ thông khí:</strong> Nếu thông khí tự nhiên của bệnh nhân không đủ (thể hiện qua SpO2 thấp và toan hô hấp nặng), cần cân nhắc hỗ trợ thông khí nhân tạo. Thở máy không xâm lấn (BiPAP) là ưu tiên hàng đầu trong đợt cấp COPD hoặc phù phổi cấp thể huyết động ổn định. Nếu thất bại với BiPAP hoặc bệnh nhân có chống chỉ định, cần đặt nội khí quản và thở máy xâm lấn. Mục tiêu là thải dần CO2 để kéo pH về mức an toàn, nhưng tránh hạ PaCO2 quá nhanh.</p>
-                    <p><strong>4. Giải quyết nguyên nhân gốc:</strong> Phân biệt toan hô hấp cấp (ví dụ: tràn khí màng phổi, tràn dịch, liệt cơ, dùng thuốc ức chế hô hấp - Opioid/Sedative) và toan hô hấp mạn (COPD). Điều trị triệt để nguyên nhân là cách duy nhất để giải quyết rối loạn: dẫn lưu màng phổi, kháng sinh nếu nhiễm trùng phổi, hoặc dùng thuốc đối kháng Opioid (Naloxone).</p>
-                    <p><strong>5. Tránh các sai lầm thường gặp:</strong> Tuyệt đối không bù NaHCO3 trong toan hô hấp vì nó sẽ kết hợp với H+ tạo ra nhiều CO2 hơn, làm trầm trọng thêm tình trạng nhiễm toan. Kiểm tra các thuốc bệnh nhân đang dùng để loại bỏ các thuốc gây ức chế hô hấp.</p>
+        if (p < 7.35) {
+            nodes.push('n2'); edges.push('e1');
+            if (c > 45) {
+                nodes.push('n4'); edges.push('e3');
+                title = "TOAN HÔ HẤP (RESPIRATORY ACIDOSIS)";
+                logic = "Sự tích tụ CO2 do thông khí kém.";
+                treat = `
+                    <p><b>1. Nhận định lâm sàng:</b> Bệnh nhân thường có biểu hiện thở nông, chậm hoặc rối loạn nhịp thở. Trong trường hợp cấp tính, cần loại trừ ngay các nguyên nhân gây tắc nghẽn đường thở, liệt cơ hô hấp hoặc ức chế trung tâm hô hấp do thuốc (như Opioids, Sedatives). Đây là tình trạng đe dọa tính mạng nếu pH tiếp tục giảm.</p>
+                    <h3>2. Chiến lược xử trí cấp cứu:</h3>
+                    <p>- <b>Thông khí hỗ trợ:</b> Đây là chìa khóa vàng. Nếu bệnh nhân còn tỉnh và hợp tác, ưu tiên thở máy không xâm lấn (NIV/BiPAP) để hỗ trợ đào thải CO2. Nếu tri giác lơ mơ (GCS < 12) hoặc có dấu hiệu kiệt sức cơ hô hấp, cần đặt nội khí quản và thông khí cơ học xâm lấn ngay lập tức.</p>
+                    <p>- <b>Điều trị nguyên nhân:</b> Nếu do COPD hoặc Hen phế quản, sử dụng thuốc giãn phế quản đường khí dung và Corticoid liều cao. Nếu do tràn khí/tràn dịch màng phổi, tiến hành dẫn lưu giải áp.</p>
+                    <p>- <b>Lưu ý đặc biệt:</b> Tuyệt đối <b>không bù Bicarbonate</b> trong toan hô hấp thuần túy, vì Bicarbonate sẽ kết hợp với H+ tạo thêm CO2, làm tình trạng toan nội bào trở nên tồi tệ hơn.</p>
+                    <p><b>3. Theo dõi:</b> Lặp lại khí máu mỗi 30-60 phút cho đến khi PaCO2 kiểm soát được và pH > 7.25.</p>
                 `;
-            } else if (hco3 < 22) {
-                activePath.push('toanCH'); cy.getElementById('e4').addClass('active-edge');
-                activePath.push('winter'); cy.getElementById('e5').addClass('active-edge');
-                let winter = (1.5 * hco3 + 8).toFixed(1); winter = `${winter-2}-${winter+2}`;
-                title = "TOAN CHUYỂN HÓA";
-                logic = `Giảm HCO3-. Dự đoán PaCO2 bù trừ (Winter): ${winter} mmHg.`;
-                treatTxt = `
-                    <p><strong>1. Đánh giá Anion Gap (AG) và tìm nguyên nhân:</strong> Đây là bước quan trọng nhất. Nếu không tính Na+, bạn cần dựa vào lâm sàng. Nếu bệnh nhân có dấu hiệu mất nước, tiêu chảy nặng, toan chuyển hóa có thể là AG bình thường (mất kiềm). Nếu bệnh nhân nằm trong bệnh cảnh sốc (nhiễm khuẩn, mất máu), tiểu đường không kiểm soát, hoặc ngộ độc chất (methanol, ethylene glycol), toan chuyển hóa thường là AG tăng (tích acid cố định).</p>
-                    <p><strong>2. Tìm và điều trị nguyên nhân gốc:</strong> Toan chuyển hóa chỉ là triệu chứng, không phải là bệnh. Nếu do sốc, cần bù dịch hoặc dùng thuốc vận mạch. Nếu do tiểu đường (DKA), cần truyền insulin liều thấp và bù dịch, theo dõi sát Kali và đường huyết. Nếu suy thận cấp/mạn gây tích tụ acid cố định, cần cân nhắc lọc máu cấp cứu.</p>
-                    <p><strong>3. Cân nhắc bù NaHCO3:</strong> Đây là chỉ định rất hạn chế và gây tranh cãi. Chỉ bù NaHCO3 khi pH < 7.1 và có bằng chứng của việc mất HCO3- nặng (tiêu chảy, toan ống thận), hoặc trong các trường hợp nhiễm toan nhiễm ceton do rượu hoặc ngộ độc acid cố định cụ thể.</p>
-                    <p><strong>4. Theo dõi sát:</strong> Lặp lại khí máu sau 1-2 giờ để đánh giá đáp ứng điều trị. Theo dõi chặt chẽ điện giải đồ (đặc biệt là Kali), vì tình trạng nhiễm toan thường làm Kali máu "tăng giả" do nó di chuyển từ trong tế bào ra ngoài, nếu bù dịch hoặc insulin Kali sẽ hạ rất nhanh.</p>
+            } else {
+                nodes.push('n5', 'n8'); edges.push('e4', 'e7');
+                let w = (1.5 * h + 8).toFixed(1);
+                title = "TOAN CHUYỂN HÓA (METABOLIC ACIDOSIS)";
+                logic = `Giảm HCO3-. PaCO2 mục tiêu để bù trừ (Winter): ${w} mmHg.`;
+                treat = `
+                    <p><b>1. Phân loại qua Anion Gap (AG):</b> Đây là bước bắt buộc. Tính AG = Na - (Cl + HCO3). 
+                    Nếu AG tăng (> 12): Nghĩ đến Sốc (Lactat), Nhiễm toan Ceton (DKA), Suy thận (Ure), hoặc Ngộ độc. 
+                    Nếu AG bình thường: Thường do mất kiềm qua tiêu chảy hoặc toan hóa ống thận.</p>
+                    <h3>2. Phác đồ điều trị:</h3>
+                    <p>- <b>Bù dịch:</b> Trong hầu hết các trường hợp toan chuyển hóa do sốc hoặc mất nước, bù dịch đẳng trương (NaCl 0.9%) là ưu tiên hàng đầu để cải thiện tưới máu mô và đào thải acid.</p>
+                    <p>- <b>Kiểm soát nguyên nhân:</b> Nếu là DKA, truyền Insulin liều thấp kết hợp bù dịch và theo dõi sát Kali. Nếu là sốc nhiễm khuẩn, sử dụng kháng sinh sớm và vận mạch nếu cần.</p>
+                    <p>- <b>Bù Bicarbonate:</b> Chỉ cân nhắc khi pH < 7.1 và có bằng chứng của việc mất HCO3- nặng hoặc nhiễm toan do một số loại ngộ độc cụ thể. Mục tiêu không phải đưa pH về bình thường mà chỉ đưa về mức an toàn (pH ~ 7.2).</p>
+                    <p><b>3. Nguy cơ:</b> Chú ý tình trạng hạ Kali máu khi pH bắt đầu cải thiện, vì H+ đi vào tế bào sẽ kéo theo K+ đi vào cùng.</p>
                 `;
             }
-        } else if (ph > 7.45) {
-            activePath.push('kiem');
-            if (paco2 < 35) {
-                activePath.push('kiemHH'); cy.getElementById('e6').addClass('active-edge');
-                title = "KIỀM HÔ HẤP";
-                logic = "Do thải CO2 quá mức.";
-                treatTxt = `
-                    <p><strong>1. Trấn an và giảm thông khí:</strong> Nguyên nhân phổ biến nhất là tình trạng tăng thông khí do lo âu, hoảng loạn. Cần trấn an bệnh nhân, hướng dẫn họ thở chậm lại. Một mẹo lâm sàng là cho bệnh nhân thở lại vào túi giấy để tăng nồng độ PaCO2.</p>
-                    <p><strong>2. Giải quyết nguyên nhân gốc:</strong> Cần loại bỏ các kích thích gây tăng thông khí như đau, sốt (dùng thuốc giảm đau, hạ sốt). Nếu do thở máy quá mức, cần điều chỉnh lại các thông số máy thở (giảm thể tích khí lưu thông hoặc nhịp thở).</p>
-                    <p><strong>3. Đánh giá các nguyên nhân nghiêm trọng:</strong> Phân biệt kiềm hô hấp cấp (lo âu) và kiềm hô hấp mạn (thay đổi sinh lý khi lên cao, hoặc do dùng thuốc). Luôn lưu ý tình trạng hạ Kali máu đi kèm, vì nó là một rối loạn điện giải nguy hiểm và khó bù nếu pH còn cao.</p>
+        } else if (p > 7.45) {
+            nodes.push('n3'); edges.push('e2');
+            if (c < 35) {
+                nodes.push('n6'); edges.push('e5');
+                title = "KIỀM HÔ HẤP (RESPIRATORY ALKALOSIS)";
+                logic = "Đào thải quá nhiều CO2 do tăng thông khí.";
+                treat = `
+                    <p><b>1. Nguyên nhân thường gặp:</b> Lo âu (Hyperventilation syndrome), đau cấp tính, sốt cao, hoặc giai đoạn đầu của thuyên tắc phổi. Ở bệnh nhân thở máy, thường do đặt tần số thở hoặc thể tích khí lưu thông quá cao.</p>
+                    <h3>2. Xử trí lâm sàng:</h3>
+                    <p>- <b>Giảm kích thích:</b> Trấn an bệnh nhân, điều trị giảm đau và hạ sốt tích cực. Nếu do tâm lý, có thể cho bệnh nhân thở lại vào túi giấy để tăng nồng độ PaCO2 hít vào.</p>
+                    <p>- <b>Điều chỉnh máy thở:</b> Giảm nhịp thở của máy hoặc giảm thể tích khí lưu thông (Vt). Theo dõi sát để tránh tình trạng kiềm quá mức gây co thắt mạch máu não và giảm tưới máu não.</p>
+                    <p><b>3. Biến chứng:</b> Kiềm hô hấp nặng có thể gây hạ Kali và hạ Canxi máu (gây dấu hiệu tê bì, co quắp tay chân - Trousseau/Chvostek). Cần bù điện giải nếu có triệu chứng.</p>
                 `;
-            } else if (hco3 > 26) {
-                activePath.push('kiemCH'); cy.getElementById('e7').addClass('active-edge');
-                title = "KIỀM CHUYỂN HÓA";
-                logic = "Do mất acid hoặc hạ Kali.";
-                treatTxt = `
-                    <p><strong>1. Bù dịch và điện giải:</strong> Rối loạn này thường đi kèm với tình trạng mất dịch, mất Clo và hạ Kali máu. Cần truyền dịch đẳng trương NaCl 0.9% để bù Clo và dịch. Bắt buộc phải bù Kali (KCL) qua đường tĩnh mạch hoặc đường uống, vì kiềm chuyển hóa rất khó sửa nếu tình trạng hạ Kali không được giải quyết.</p>
-                    <p><strong>2. Giải quyết nguyên nhân gốc:</strong> Nếu do nôn nhiều, cần dùng thuốc chống nôn. Nếu do dùng thuốc lợi tiểu mất Kali (ví dụ Furosemide), cần cân nhắc ngừng thuốc hoặc thay sang lợi tiểu giữ Kali (Spironolactone).</p>
+            } else {
+                nodes.push('n7'); edges.push('e6');
+                title = "KIỀM CHUYỂN HÓA (METABOLIC ALKALOSIS)";
+                logic = "Tăng HCO3- do mất acid dịch vị hoặc dùng lợi tiểu.";
+                treat = `
+                    <p><b>1. Cơ chế bệnh sinh:</b> Thường gặp ở bệnh nhân nôn kéo dài, hút dịch dạ dày quá mức, hoặc sử dụng lợi tiểu quai (Furosemide) gây mất Clo và Kali.</p>
+                    <h3>2. Hướng dẫn xử trí:</h3>
+                    <p>- <b>Bù dịch và Clo:</b> Truyền dịch NaCl 0.9% là phương pháp hiệu quả nhất để cung cấp Clo, giúp thận tăng đào thải HCO3-. Đây gọi là Kiềm chuyển hóa đáp ứng với Clo.</p>
+                    <p>- <b>Bù Kali:</b> Hầu như tất cả bệnh nhân kiềm chuyển hóa đều bị hạ Kali máu. Cần bù Kali tích cực (ưu tiên KCl) để sửa chữa rối loạn này.</p>
+                    <p>- <b>Acetazolamide:</b> Trong trường hợp kiềm chuyển hóa nặng và bệnh nhân quá tải dịch không thể truyền thêm NaCl, có thể dùng Acetazolamide (Diamox) để ức chế men CA tại thận, giúp thải HCO3-.</p>
+                    <p><b>3. Lưu ý:</b> Kiềm chuyển hóa nặng (pH > 7.55) có thể gây ức chế hô hấp bù trừ và loạn nhịp tim cấp tính.</p>
                 `;
             }
         } else {
-            activePath.push('root');
-            title = "BÌNH THƯỜNG / CÂN BẰNG";
-            logic = "Chỉ số ổn định.";
-            treatTxt = "<p>Tiếp tục theo dõi lâm sàng và lặp lại khí máu sau 4-6 giờ hoặc khi có thay đổi tình trạng.</p>";
+            title = "BÌNH THƯỜNG HOẶC RỐI LOẠN HỖN HỢP ĐÃ BÙ";
+            treat = "<p>pH trong giới hạn bình thường. Cần kiểm tra kỹ PaCO2 và HCO3- để xem có tình trạng rối loạn kép (ví dụ: vừa Toan CH vừa Kiềm HH) hay không. Tiếp tục theo dõi lâm sàng và các chỉ số điện giải đồ.</p>";
         }
 
-        cy.getElementById('e1').addClass('active-edge'); cy.getElementById('e2').addClass('active-edge');
-        
-        // Hiển thị kết quả
-        document.getElementById('diagTitle').innerText = title;
-        document.getElementById('diagLogic').innerText = logic;
-        treat.innerHTML = treatTxt;
-        
-        // Highlight đường đi trên sơ đồ
-        activePath.forEach(nodeId => cy.getElementById(nodeId).addClass('active'));
-        area.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('outTitle').innerText = title;
+        document.getElementById('outLogic').innerText = logic;
+        document.getElementById('outTreat').innerHTML = treat;
+
+        nodes.forEach(id => cy.getElementById(id).addClass('highlight'));
+        edges.forEach(id => cy.getElementById(id).addClass('path'));
+        cy.layout({ name: 'preset' }).run();
     }
 </script>
 </body>
