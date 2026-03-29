@@ -1,109 +1,71 @@
 <!DOCTYPE html>
-<html lang="vi" translate="no">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABG Mentor Pro - Sinh Lý Bệnh Hệ Thống</title>
+    <title>ABG PRO - HỆ THỐNG ĐA CƠ QUAN</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.23.0/cytoscape.min.js"></script>
     <style>
-        :root { --primary: #004085; --danger: #c0392b; --warning: #d35400; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; }
-        .app-card { max-width: 1000px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: var(--primary); color: white; padding: 20px; text-align: center; }
-        .content { padding: 25px; }
-        .input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
-        
-        #resultArea { display: none; margin-top: 30px; }
-        #cy { width: 100%; height: 400px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 20px; }
-        
-        .organ-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .organ-box { padding: 15px; border-radius: 8px; border: 1px solid #eee; background: #fff; }
-        .organ-name { font-weight: bold; color: var(--primary); border-bottom: 2px solid #eee; margin-bottom: 8px; display: block; }
-        
-        .treatment-full { background: #fff; border: 1px solid #ddd; padding: 25px; border-radius: 10px; line-height: 1.7; text-align: justify; margin-top: 20px; }
-        .treatment-full h2 { color: var(--danger); border-left: 5px solid var(--danger); padding-left: 10px; }
-        .drug-highlight { background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffc107; margin: 15px 0; }
+        body { font-family: sans-serif; background: #f0f2f5; padding: 10px; line-height: 1.6; }
+        .card { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .input-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        #cy { width: 100%; height: 350px; border: 1px solid #eee; margin: 20px 0; border-radius: 10px; }
+        .result-text { border-left: 5px solid #dc3545; padding-left: 15px; background: #fff5f5; padding: 15px; border-radius: 5px; }
+        .organ-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .organ { background: #e9ecef; padding: 10px; border-radius: 5px; font-size: 0.9rem; }
+        .drug-note { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 5px; margin-top: 15px; font-weight: bold; color: #856404; }
     </style>
 </head>
 <body>
-
-<div class="app-card">
-    <div class="header">
-        <h1>ABG ADVANCED ANALYZER</h1>
-        <p>Phân tích đa cơ quan & Phác đồ dược lý chuyên sâu</p>
+<div class="card">
+    <h2 style="text-align: center; color: #007bff;">PHÂN TÍCH KHÍ MÁU HỆ THỐNG</h2>
+    <div class="input-box">
+        <input type="number" id="ph" step="0.01" placeholder="pH">
+        <input type="number" id="paco2" placeholder="PaCO2">
+        <input type="number" id="hco3" placeholder="HCO3-">
     </div>
-
-    <div class="content">
-        <div class="input-row">
-            <div><label>pH</label><input type="number" id="ph" step="0.01"></div>
-            <div><label>PaCO2</label><input type="number" id="paco2"></div>
-            <div><label>HCO3-</label><input type="number" id="hco3"></div>
-        </div>
-        <button class="btn" onclick="analyzeDeep()">PHÂN TÍCH HỆ THỐNG</button>
-
-        <div id="resultArea">
-            <h2 id="mainDiag" style="color: var(--danger); text-align: center;"></h2>
-            <div id="cy"></div>
-
-            <div class="organ-grid" id="organInfluence"></div>
-
-            <div class="treatment-full">
-                <h2>💊 PHÁC ĐỒ XỬ TRÍ & DƯỢC LÝ CHI TIẾT</h2>
-                <div id="fullText"></div>
-            </div>
-        </div>
+    <button onclick="analyze()">PHÂN TÍCH NGAY</button>
+    <div id="resArea" style="display:none;">
+        <div id="cy"></div>
+        <div class="result-text"><h3 id="diagTitle"></h3></div>
+        <div class="organ-info" id="organArea"></div>
+        <div class="drug-note" id="drugArea"></div>
     </div>
 </div>
-
 <script>
     let cy;
     window.onload = function() {
         cy = cytoscape({
             container: document.getElementById('cy'),
-            style: [
-                { selector: 'node', style: { 'label': 'data(label)', 'text-valign': 'center', 'background-color': '#fff', 'border-width': 2, 'width': 130, 'height': 45, 'shape': 'round-rectangle', 'font-size': '11px' } },
-                { selector: 'edge', style: { 'width': 2, 'line-color': '#ccc', 'target-arrow-shape': 'triangle', 'curve-style': 'bezier', 'label': 'data(label)', 'font-size': '9px' } },
-                { selector: '.active', style: { 'background-color': '#fff3cd', 'border-color': '#ffc107', 'border-width': 4 } }
-            ],
-            layout: { name: 'preset' }
+            style: [{ selector: 'node', style: { 'label': 'data(label)', 'text-valign': 'center', 'background-color': '#fff', 'border-width': 2, 'width': 100, 'height': 40, 'font-size': '10px' } },
+                    { selector: 'edge', style: { 'width': 2, 'line-color': '#ccc', 'target-arrow-shape': 'triangle' } },
+                    { selector: '.active', style: { 'background-color': '#ffc107', 'border-color': '#ffc107' } }],
+            layout: { name: 'grid' }
         });
-        
-        cy.add([
-            { data: { id: 'start', label: 'PHÂN TÍCH pH' }, position: { x: 400, y: 50 } },
-            { data: { id: 'acid', label: 'TOAN (pH < 7.35)' }, position: { x: 250, y: 150 } },
-            { data: { id: 'alk', label: 'KIỀM (pH > 7.45)' }, position: { x: 550, y: 150 } },
-            { data: { id: 'r_acid', label: 'TOAN HÔ HẤP' }, position: { x: 150, y: 250 } },
-            { data: { id: 'm_acid', label: 'TOAN CH.HÓA' }, position: { x: 350, y: 250 } },
-            { data: { id: 'r_alk', label: 'KIỀM HÔ HẤP' }, position: { x: 450, y: 250 } },
-            { data: { id: 'm_alk', label: 'KIỀM CH.HÓA' }, position: { x: 650, y: 250 } }
-        ]);
-        cy.add([
-            { data: { source: 'start', target: 'acid' } }, { data: { source: 'start', target: 'alk' } },
-            { data: { source: 'acid', target: 'r_acid', label: 'CO2 > 45' } },
-            { data: { source: 'acid', target: 'm_acid', label: 'HCO3 < 22' } },
-            { data: { source: 'alk', target: 'r_alk', label: 'CO2 < 35' } },
-            { data: { source: 'alk', target: 'm_alk', label: 'HCO3 > 26' } }
-        ]);
+        cy.add([{ data: { id: 'a', label: 'pH' } }, { data: { id: 'b', label: 'TOAN' } }, { data: { id: 'c', label: 'KIỀM' } }]);
+        cy.add([{ data: { source: 'a', target: 'b' } }, { data: { source: 'a', target: 'c' } }]);
     };
-
-    function analyzeDeep() {
+    function analyze() {
         const p = parseFloat(document.getElementById('ph').value);
         const c = parseFloat(document.getElementById('paco2').value);
         const h = parseFloat(document.getElementById('hco3').value);
-        if (isNaN(p) || isNaN(c) || isNaN(h)) return;
-
-        document.getElementById('resultArea').style.display = "block";
-        cy.elements().removeClass('active');
-        
-        let diag = "", organs = "", treat = "";
-
+        if (isNaN(p)) return;
+        document.getElementById('resArea').style.display = "block";
+        let diag = "", organs = "", drug = "";
         if (p < 7.35) {
-            cy.getElementById('acid').addClass('active');
-            if (c > 45) {
-                cy.getElementById('r_acid').addClass('active');
-                diag = "TOAN HÔ HẤP (CO2 ứ đọng)";
-                organs = `
-                    <div class="organ-box"><span class="organ-name">🧠 NÃO BỘ</span>Giãn mạch não do tăng CO2 cấp tính, tăng áp lực nội sọ gây đau đầu, lơ mơ, thậm chí hôn mê.</div>
-                    <div class="organ-box"><span class="organ-name">🫀 TIM MẠCH</span>Ức chế sức co b
+            cy.getElementById('b').addClass('active');
+            diag = "NHIỄM TOAN";
+            organs = "<div class='organ'>🧠 <b>Não:</b> Đau đầu, lơ mơ do giãn mạch.</div><div class='organ'>🫀 <b>Tim:</b> Giảm co bóp, loạn nhịp.</div>";
+            drug = "⚠️ Lưu ý: Chỉ bù Bicarbonate khi pH < 7.1. Chú ý bù Kali vì K+ sẽ hạ nhanh khi hết toan.";
+        } else {
+            cy.getElementById('c').addClass('active');
+            diag = "NHIỄM KIỀM";
+            organs = "<div class='organ'>🧠 <b>Não:</b> Co mạch não, chóng mặt.</div><div class='organ'>⚡ <b>Cơ:</b> Co quắp (hạ Canxi ảo).</div>";
+            drug = "⚠️ Lưu ý: Ngưng ngay lợi tiểu Furosemide. Bù NaCl 0.9% để cung cấp Clo giúp thải kiềm.";
+        }
+        document.getElementById('diagTitle').innerText = diag;
+        document.getElementById('organArea').innerHTML = organs;
+        document.getElementById('drugArea').innerText = drug;
+    }
