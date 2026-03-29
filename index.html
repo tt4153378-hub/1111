@@ -1,110 +1,141 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" translate="no">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chuyên gia ABG - Trợ Lý Khí Máu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABG Neural Map - Sơ đồ tư duy Khí máu</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <style>
-        :root { --primary: #0056b3; --success: #28a745; --danger: #d32f2f; --warning: #ffa000; --gray: #f1f3f4; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #e8eaed; margin: 0; padding: 15px; display: flex; justify-content: center; }
-        .app-card { width: 100%; max-width: 450px; background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: var(--primary); color: white; padding: 25px 20px; text-align: center; }
-        .header h1 { margin: 0; font-size: 1.3rem; text-transform: uppercase; letter-spacing: 1px; }
-        .content { padding: 20px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.85rem; font-weight: 700; color: #5f6368; margin-bottom: 6px; }
-        input { width: 100%; padding: 14px; border: 2px solid #dadce0; border-radius: 10px; font-size: 1.1rem; box-sizing: border-box; }
-        .btn-calc { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        #resultArea { display: none; margin-top: 25px; }
-        .res-box { padding: 20px; border-radius: 12px; background: #f8f9fa; border-left: 6px solid var(--primary); }
-        .res-title { font-size: 1.4rem; font-weight: 800; color: var(--danger); margin-bottom: 8px; display: block; }
-        .treat-box { background: #fff4e5; border: 1px solid #ffe2b3; padding: 15px; border-radius: 8px; margin-top: 10px; }
-        .footer { text-align: center; padding: 20px; font-size: 0.75rem; color: #70757a; border-top: 1px solid #eee; }
+        :root { --primary: #1a73e8; --bg: #f8f9fa; --text: #202124; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .app-card { width: 100%; max-width: 800px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); padding: 20px; box-sizing: border-box; }
+        .header { text-align: center; border-bottom: 1px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
+        .input-area { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+        .input-group { display: flex; flex-direction: column; width: 120px; }
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
+        .btn { padding: 10px 25px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        
+        #diagram-container { width: 100%; overflow-x: auto; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-top: 20px; }
+        .info-panel { display: none; margin-top: 20px; padding: 15px; border-radius: 8px; background: #e8f0fe; border-left: 5px solid var(--primary); line-height: 1.6; }
+        .highlight-box { color: #d93025; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="app-card">
     <div class="header">
-        <h1>Bác Sĩ Trực: Khí Máu</h1>
+        <h2 style="margin:0; color:var(--primary)">ABG NEURAL MAP</h2>
+        <p style="margin:5px 0; font-size:0.9rem; color:#666">Học khí máu qua sơ đồ tư duy hệ thống</p>
     </div>
-    <div class="content">
-        <div class="input-group">
-            <label>pH (7.35 - 7.45)</label>
-            <input type="number" id="ph" step="0.01" placeholder="Nhập pH...">
-        </div>
-        <div class="input-group">
-            <label>PaCO2 (35 - 45 mmHg)</label>
-            <input type="number" id="paco2" placeholder="Nhập PaCO2...">
-        </div>
-        <div class="input-group">
-            <label>HCO3- (22 - 26 mmol/L)</label>
-            <input type="number" id="hco3" placeholder="Nhập HCO3-...">
-        </div>
-        <button class="btn-calc" onclick="analyzeABG()">PHÂN TÍCH LÂM SÀNG</button>
 
-        <div id="resultArea">
-            <div class="res-box">
-                <span id="resTitle" class="res-title"></span>
-                <span id="resLogic" style="display:block; margin-bottom:10px;"></span>
-                <div class="treat-box">
-                    <b>🏥 Xử lý đề nghị:</b>
-                    <p id="resTreat" style="margin:5px 0 0 0; font-size:0.95rem;"></p>
-                </div>
-            </div>
-        </div>
+    <div class="input-area">
+        <div class="input-group"><label>pH</label><input type="number" id="ph" step="0.01" placeholder="7.xx"></div>
+        <div class="input-group"><label>PaCO2</label><input type="number" id="paco2" placeholder="35-45"></div>
+        <div class="input-group"><label>HCO3-</label><input type="number" id="hco3" placeholder="22-26"></div>
+        <button class="btn" style="align-self: flex-end;" onclick="drawMap()">PHÂN TÍCH MAP</button>
     </div>
-    <div class="footer">
-        © 2026 ABG Tool - Hỗ trợ học tập khoa.<br>
-        <i>Nhập đủ 3 số để bắt đầu phân tích.</i>
+
+    <div id="info" class="info-panel">
+        <h3 id="diag-name" style="margin-top:0; color:#d93025"></h3>
+        <div id="diag-detail"></div>
+    </div>
+
+    <div id="diagram-container">
+        <div class="mermaid" id="mermaid-chart">
+            graph TD
+            Start(Bắt đầu: Kiểm tra pH) -->|pH < 7.35| Acid(Nhiễm Toan)
+            Start -->|pH > 7.45| Alk(Nhiễm Kiềm)
+            Start -->|7.35 - 7.45| Normal(Bình thường/Hỗn hợp)
+
+            Acid -->|PaCO2 > 45| RespAcid(Toan Hô Hấp)
+            Acid -->|HCO3 < 22| MetaAcid(Toan Chuyển Hóa)
+
+            Alk -->|PaCO2 < 35| RespAlk(Kiềm Hô Hấp)
+            Alk -->|HCO3 > 26| MetaAlk(Kiềm Chuyển Hóa)
+
+            classDef active fill:#f96,stroke:#333,stroke-width:4px;
+            classDef default fill:#fff,stroke:#333,stroke-width:1px;
+        </div>
     </div>
 </div>
 
 <script>
-    function analyzeABG() {
-        const ph = parseFloat(document.getElementById('ph').value);
-        const paco2 = parseFloat(document.getElementById('paco2').value);
-        const hco3 = parseFloat(document.getElementById('hco3').value);
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
 
-        if (isNaN(ph) || isNaN(paco2) || isNaN(hco3)) {
-            alert("Vui lòng nhập đủ các thông số!");
-            return;
-        }
+    function drawMap() {
+        const p = parseFloat(document.getElementById('ph').value);
+        const c = parseFloat(document.getElementById('paco2').value);
+        const h = parseFloat(document.getElementById('hco3').value);
 
-        let title = "", logic = "", treat = "";
-        const area = document.getElementById('resultArea');
+        if (isNaN(p) || isNaN(c) || isNaN(h)) { alert("Vui lòng nhập đủ chỉ số!"); return; }
 
-        if (ph < 7.35) {
-            if (paco2 > 45) {
-                title = "TOAN HÔ HẤP";
-                logic = "Do phổi không thải được CO2.";
-                treat = "Hỗ trợ thông khí, hút đờm, thở máy nếu cần.";
-            } else {
-                title = "TOAN CHUYỂN HÓA";
-                logic = "Do tích acid hoặc mất kiềm.";
-                treat = "Bù dịch, tìm nguyên nhân (Sốc, Ceton). Bù Kiềm khi pH < 7.1.";
+        let activeNode = "";
+        let path = "Start";
+        let diag = "";
+        let detail = "";
+
+        if (p < 7.35) {
+            path += ",Acid";
+            if (c > 45) { 
+                activeNode = "RespAcid"; 
+                diag = "TOAN HÔ HẤP";
+                detail = "<b>Cơ chế:</b> Tăng PaCO2 làm giảm pH. Thận sẽ bù bằng cách giữ HCO3-. <br><b>Nguyên nhân:</b> COPD, suy hô hấp, liệt cơ hô hấp.";
             }
-        } else if (ph > 7.45) {
-            if (paco2 < 35) {
-                title = "KIỀM HÔ HẤP";
-                logic = "Do thở quá nhanh, thải nhiều CO2.";
-                treat = "Trấn an, giảm đau, cho thở chậm lại.";
-            } else {
-                title = "KIỀM CHUYỂN HÓA";
-                logic = "Do mất acid (nôn) hoặc hạ Kali.";
-                treat = "Bù dịch NaCl 0.9% và bù Kali.";
+            else if (h < 22) { 
+                activeNode = "MetaAcid"; 
+                diag = "TOAN CHUYỂN HÓA";
+                detail = "<b>Cơ chế:</b> Giảm HCO3- làm giảm pH. Phổi bù bằng cách thở nhanh thải CO2. <br><b>Nguyên nhân:</b> Sốc, nhiễm toan ceton, suy thận.";
+            }
+        } else if (p > 7.45) {
+            path += ",Alk";
+            if (c < 35) { 
+                activeNode = "RespAlk"; 
+                diag = "KIỀM HÔ HẤP";
+                detail = "<b>Cơ chế:</b> Giảm PaCO2 làm tăng pH. Thận bù bằng cách thải bớt HCO3-. <br><b>Nguyên nhân:</b> Lo âu, sốt, đau, thở máy quá mức.";
+            }
+            else if (h > 26) { 
+                activeNode = "MetaAlk"; 
+                diag = "KIỀM CHUYỂN HÓA";
+                detail = "<b>Cơ chế:</b> Tăng HCO3- làm tăng pH. Phổi bù bằng cách thở chậm giữ CO2. <br><b>Nguyên nhân:</b> Nôn nhiều, lợi tiểu, hạ Kali.";
             }
         } else {
-            title = "BÌNH THƯỜNG / ĐÃ BÙ";
-            logic = "Chỉ số ổn định.";
-            treat = "Tiếp tục theo dõi lâm sàng.";
+            activeNode = "Normal";
+            diag = "BÌNH THƯỜNG / CÂN BẰNG";
+            detail = "Cơ thể đang ở trạng thái cân bằng hoặc đã bù trừ hoàn toàn.";
         }
 
-        document.getElementById('resTitle').innerText = title;
-        document.getElementById('resLogic').innerText = logic;
-        document.getElementById('resTreat').innerText = treat;
-        area.style.display = "block";
+        // Cập nhật giao diện
+        document.getElementById('diag-name').innerText = diag;
+        document.getElementById('diag-detail').innerHTML = detail;
+        document.getElementById('info').style.display = "block";
+
+        // Vẽ lại sơ đồ với node active
+        const fullPath = path + "," + activeNode;
+        const nodes = fullPath.split(",");
+        
+        // Render lại sơ đồ với hiệu ứng sáng
+        const chartMarkup = `
+            graph TD
+            Start(Bắt đầu: Kiểm tra pH) -->|pH < 7.35| Acid(Nhiễm Toan)
+            Start -->|pH > 7.45| Alk(Nhiễm Kiềm)
+            Start -->|7.35 - 7.45| Normal(Bình thường/Hỗn hợp)
+
+            Acid -->|PaCO2 > 45| RespAcid(Toan Hô Hấp)
+            Acid -->|HCO3 < 22| MetaAcid(Toan Chuyển Hóa)
+
+            Alk -->|PaCO2 < 35| RespAlk(Kiềm Hô Hấp)
+            Alk -->|HCO3 > 26| MetaAlk(Kiềm Chuyển Hóa)
+
+            ${nodes.map(n => `class ${n} active;`).join("\n")}
+            classDef active fill:#ffeb3b,stroke:#fbc02d,stroke-width:4px;
+            classDef default fill:#fff,stroke:#ddd,stroke-width:1px;
+        `;
+
+        const container = document.getElementById('diagram-container');
+        container.innerHTML = `<div class="mermaid">${chartMarkup}</div>`;
+        mermaid.init(undefined, ".mermaid");
     }
 </script>
+
 </body>
 </html>
