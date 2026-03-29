@@ -3,167 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABG Expert - Phân Tích Hệ Thống</title>
+    <title>ABG Mentor - Cẩm Nang Khí Máu Toàn Diện</title>
     <style>
-        :root { --primary: #0056b3; --danger: #d32f2f; --warn: #ff9800; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #333; }
-        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: var(--primary); color: white; padding: 20px; text-align: center; }
-        .content { padding: 20px; }
-        .input-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.85rem; color: #666; }
-        .btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn:hover { background: #004494; }
-
-        /* Sơ đồ thuần CSS */
-        #diagram-area { margin: 20px 0; display: none; text-align: center; }
-        .flow-svg { max-width: 100%; height: auto; background: #fff; border: 1px solid #eee; border-radius: 10px; }
-        .node-rect { fill: #fff; stroke: #ccc; stroke-width: 2; }
-        .node-text { font-size: 12px; font-weight: bold; fill: #333; }
-        .active-node { fill: #fff3cd; stroke: var(--warn); stroke-width: 3; }
-
-        .result-box { display: none; margin-top: 20px; }
-        .diag-title { color: var(--danger); border-left: 5px solid var(--danger); padding-left: 15px; margin-bottom: 20px; }
+        :root { --primary: #1a73e8; --danger: #d93025; --text: #202124; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; margin: 0; padding: 10px; }
+        .wrapper { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; }
+        .header { background: var(--primary); color: #fff; padding: 25px; text-align: center; }
+        .main-content { padding: 25px; }
+        .input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .input-group label { display: block; font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; color: #5f6368; }
+        input { width: 100%; padding: 12px; border: 2px solid #dadce0; border-radius: 8px; font-size: 1rem; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); }
+        .btn-run { width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
         
-        .organ-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .organ-card { padding: 15px; background: #fff; border: 1px solid #eee; border-radius: 8px; }
-        .organ-card h4 { margin: 0 0 10px 0; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        /* Sơ đồ tĩnh SVG siêu nhẹ */
+        .diagram-container { margin: 30px 0; text-align: center; display: none; }
+        .active-node { fill: #fef7e0 !important; stroke: #f9ab00 !important; stroke-width: 3px !important; }
+
+        /* Kết quả */
+        .result-section { display: none; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        .treatment-pro { background: #fff9e6; border: 1px solid #ffe0b2; padding: 20px; border-radius: 8px; margin-top: 20px; line-height: 1.7; }
-        .treatment-pro h3 { color: #e65100; margin-top: 0; }
-        .highlight { font-weight: bold; color: var(--danger); }
+        .diagnosis-card { border-left: 6px solid var(--danger); background: #fdf2f2; padding: 20px; margin-bottom: 25px; border-radius: 4px; }
+        .organ-analysis { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .organ-item { background: #fff; border: 1px solid #dadce0; padding: 18px; border-radius: 8px; }
+        .organ-item h4 { margin: 0 0 10px 0; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.1rem; }
+        
+        .deep-dive { background: #fff3e0; border: 1px solid #ffe0b2; padding: 25px; border-radius: 8px; margin-top: 25px; }
+        .deep-dive h3 { color: #e65100; margin-top: 0; }
+        .step-box { background: rgba(255,255,255,0.6); padding: 15px; border-radius: 6px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="wrapper">
     <div class="header">
-        <h1 style="margin:0">ABG CLINICAL MASTER</h1>
-        <p style="margin:5px 0 0 0; opacity: 0.8;">Phân tích đa cơ quan & Phác đồ dược lý</p>
+        <h1 style="margin:0">GIẢNG VÕ LÂM SÀNG: KHÍ MÁU ĐỘNG MẠCH</h1>
+        <p style="margin:8px 0 0 0; opacity: 0.9;">Phân tích cơ chế - Tác động cơ quan - Phác đồ điều trị</p>
     </div>
 
-    <div class="content">
-        <div class="input-grid">
-            <div><label>pH (7.35-7.45)</label><input type="number" id="ph" step="0.01" placeholder="7.40"></div>
-            <div><label>PaCO2 (35-45)</label><input type="number" id="paco2" placeholder="40"></div>
-            <div><label>HCO3- (22-26)</label><input type="number" id="hco3" placeholder="24"></div>
+    <div class="main-content">
+        <div class="input-row">
+            <div class="input-group"><label>pH (7.35 - 7.45)</label><input type="number" id="ph" step="0.01" placeholder="vd: 7.25"></div>
+            <div class="input-group"><label>PaCO2 (35 - 45)</label><input type="number" id="paco2" placeholder="vd: 55"></div>
+            <div class="input-group"><label>HCO3- (22 - 26)</label><input type="number" id="hco3" placeholder="vd: 24"></div>
         </div>
-        <button class="btn" onclick="processABG()">PHÂN TÍCH LÂM SÀNG CHUYÊN SÂU</button>
+        <button class="btn-run" onclick="analyzeABG()">BẮT ĐẦU GIẢNG GIẢI & PHÂN TÍCH</button>
 
-        <div id="diagram-area">
-            <svg class="flow-svg" width="600" height="300" viewBox="0 0 600 300">
-                <line x1="300" y1="50" x2="150" y2="120" stroke="#ccc" stroke-width="2" />
-                <line x1="300" y1="50" x2="450" y2="120" stroke="#ccc" stroke-width="2" />
-                <line x1="150" y1="120" x2="80" y2="200" stroke="#ccc" stroke-width="2" />
-                <line x1="150" y1="120" x2="220" y2="200" stroke="#ccc" stroke-width="2" />
-                <line x1="450" y1="120" x2="380" y2="200" stroke="#ccc" stroke-width="2" />
-                <line x1="450" y1="120" x2="520" y2="200" stroke="#ccc" stroke-width="2" />
-
-                <rect id="root" class="node-rect" x="240" y="20" width="120" height="40" rx="5" />
-                <text x="300" y="45" text-anchor="middle" class="node-text">pH MÁU</text>
-
-                <rect id="node-acid" class="node-rect" x="90" y="100" width="120" height="40" rx="5" />
-                <text x="150" y="125" text-anchor="middle" class="node-text">TOAN (pH < 7.35)</text>
-
-                <rect id="node-alk" class="node-rect" x="390" y="100" width="120" height="40" rx="5" />
-                <text x="450" y="125" text-anchor="middle" class="node-text">KIỀM (pH > 7.45)</text>
-
-                <rect id="node-ra" class="node-rect" x="20" y="190" width="120" height="40" rx="5" />
-                <text x="80" y="215" text-anchor="middle" class="node-text" style="font-size:10px">TOAN HÔ HẤP</text>
-
-                <rect id="node-ma" class="node-rect" x="160" y="190" width="120" height="40" rx="5" />
-                <text x="220" y="215" text-anchor="middle" class="node-text" style="font-size:10px">TOAN CH.HÓA</text>
-
-                <rect id="node-rk" class="node-rect" x="320" y="190" width="120" height="40" rx="5" />
-                <text x="380" y="215" text-anchor="middle" class="node-text" style="font-size:10px">KIỀM HÔ HẤP</text>
-
-                <rect id="node-mk" class="node-rect" x="460" y="190" width="120" height="40" rx="5" />
-                <text x="520" y="215" text-anchor="middle" class="node-text" style="font-size:10px">KIỀM CH.HÓA</text>
+        <div class="diagram-container" id="diagContainer">
+            <svg width="600" height="200" viewBox="0 0 600 200" style="max-width:100%">
+                <path d="M300 40 L150 100 M300 40 L450 100" stroke="#dadce0" stroke-width="2"/>
+                <circle cx="300" cy="40" r="30" fill="#fff" stroke="#dadce0" stroke-width="2"/>
+                <text x="300" y="45" text-anchor="middle" font-size="12" font-weight="bold">pH</text>
+                
+                <rect id="box-acid" x="80" y="100" width="140" height="50" rx="8" fill="#fff" stroke="#dadce0" stroke-width="2"/>
+                <text x="150" y="130" text-anchor="middle" font-size="12">TOAN (pH < 7.35)</text>
+                
+                <rect id="box-alk" x="380" y="100" width="140" height="50" rx="8" fill="#fff" stroke="#dadce0" stroke-width="2"/>
+                <text x="450" y="130" text-anchor="middle" font-size="12">KIỀM (pH > 7.45)</text>
             </svg>
         </div>
 
-        <div class="result-box" id="result-box">
-            <h2 class="diag-title" id="diag-res"></h2>
-            
-            <div class="organ-grid" id="organ-res"></div>
+        <div class="result-section" id="results">
+            <div class="diagnosis-card">
+                <h2 id="diagTitle" style="margin:0; color:var(--danger)"></h2>
+                <p id="diagSubtitle" style="margin:10px 0 0 0; font-weight:500; color:#5f6368;"></p>
+            </div>
 
-            <div class="treatment-pro" id="treat-res"></div>
+            <div class="organ-analysis" id="organAnalysis"></div>
+
+            <div class="deep-dive" id="deepDiveArea"></div>
         </div>
     </div>
 </div>
 
 <script>
-    function processABG() {
+    function analyzeABG() {
         const ph = parseFloat(document.getElementById('ph').value);
         const co2 = parseFloat(document.getElementById('paco2').value);
-        const hco3 = parseFloat(document.getElementById('hco3').value);
+        const h3 = parseFloat(document.getElementById('hco3').value);
 
-        if (isNaN(ph) || isNaN(co2) || isNaN(hco3)) { alert("Vui lòng nhập đủ các chỉ số!"); return; }
+        if (isNaN(ph) || isNaN(co2) || isNaN(h3)) { alert("Bác sĩ vui lòng nhập đủ 3 chỉ số để có kết quả chính xác nhất."); return; }
 
-        document.getElementById('diagram-area').style.display = "block";
-        document.getElementById('result-box').style.display = "block";
-        
-        // Reset nodes
-        document.querySelectorAll('.node-rect').forEach(n => n.classList.remove('active-node'));
-        document.getElementById('root').classList.add('active-node');
+        document.getElementById('diagContainer').style.display = "block";
+        document.getElementById('results').style.display = "block";
+        document.getElementById('box-acid').classList.remove('active-node');
+        document.getElementById('box-alk').classList.remove('active-node');
 
-        let title = "", organs = "", treats = "";
+        let title = "", subtitle = "", organs = "", deep = "";
 
         if (ph < 7.35) {
-            document.getElementById('node-acid').classList.add('active-node');
+            document.getElementById('box-acid').classList.add('active-node');
             if (co2 > 45) {
-                document.getElementById('node-ra').classList.add('active-node');
                 title = "TOAN HÔ HẤP (Respiratory Acidosis)";
-                organs = createOrganHtml("🧠 Não: Giãn mạch, tăng áp lực nội sọ.", "🫀 Tim: Giảm co bóp, dễ loạn nhịp.", "🫁 Phổi: Tăng công thở, mỏi cơ hô hấp.", "🧬 Thận: Tăng thải H+, giữ HCO3-.");
-                treats = `<h3>🎯 Xử trí chuyên sâu:</h3>
-                    <p>1. <b>Thông khí:</b> Ưu tiên BiPAP/NIV. Chỉ đặt nội khí quản nếu có rối loạn tri giác (GCS < 12).</p>
-                    <p>2. <b>Dược lý:</b> Tuyệt đối <span class='highlight'>không bù Bicarbonate</span> vì sẽ làm tăng CO2 nội bào. Điều trị nguyên nhân gốc (giãn phế quản, hút đờm).</p>`;
+                subtitle = "Cơ chế: Do thông khí phế nang kém, phổi không thải được CO2 (axit bay hơi), dẫn đến tích tụ H+ trong máu.";
+                organs = renderOrgans(
+                    "🧠 Hệ Thần Kinh: CO2 là chất giãn mạch não cực mạnh. Khi tích tụ, nó gây tăng áp lực nội sọ, dẫn đến đau đầu, lơ mơ và 'bệnh não do CO2'.",
+                    "🫀 Hệ Tim Mạch: Tình trạng toan hóa làm giảm sức co bóp cơ tim và giảm đáp ứng với các thuốc vận mạch như Adrenaline.",
+                    "🫁 Hệ Hô Hấp: Bệnh nhân thường thở nông, gắng sức cơ hô hấp phụ. Nếu kéo dài gây mỏi cơ hoành và suy hô hấp cấp.",
+                    "🧬 Thận & Máu: Thận sẽ phản ứng chậm (sau 24-48h) bằng cách giữ lại HCO3- để trung hòa axit."
+                );
+                deep = `<h3>📘 Giảng giải xử trí chuyên sâu</h3>
+                        <p>Dành cho người mới: Mục tiêu không phải là trung hòa axit bằng thuốc, mà là <b>đưa CO2 ra ngoài</b>.</p>
+                        <div class="step-box">
+                            <b>1. Hỗ trợ thông khí:</b> Nếu bệnh nhân tỉnh, dùng máy thở không xâm lấn (BiPAP) để ép CO2 ra. Nếu lơ mơ, phải đặt nội khí quản.<br>
+                            <b>2. Tuyệt đối không bù Natri Bicarbonat:</b> Đây là sai lầm phổ biến. Bicarbonat khi vào máu gặp H+ sẽ tạo thêm CO2, làm tình trạng toan nội bào nặng hơn.<br>
+                            <b>3. Điều trị gốc:</b> Nếu do hen/COPD thì dùng thuốc giãn phế quản. Nếu do thuốc ngủ thì dùng thuốc giải độc.
+                        </div>`;
             } else {
-                document.getElementById('node-ma').classList.add('active-node');
                 title = "TOAN CHUYỂN HÓA (Metabolic Acidosis)";
-                organs = createOrganHtml("🫀 Tim: pH < 7.1 gây giảm sức bóp cơ tim.", "🫁 Phổi: Thở Kussmaul (nhanh sâu) để bù.", "💪 Cơ: Đau mỏi do tích tụ lactate.", "🩸 Máu: Tăng Kali (K+) do H+ đẩy K+ ra ngoài.");
-                treats = `<h3>🎯 Xử trí chuyên sâu:</h3>
-                    <p>1. <b>Điều trị gốc:</b> Truyền dịch trong Sốc, Insulin trong DKA, Lọc máu trong Suy thận.</p>
-                    <p>2. <b>Bù Kali:</b> <span class='highlight'>Cực kỳ quan trọng!</span> Khi pH cải thiện, K+ sẽ lao vào tế bào. Phải bù Kali sớm để tránh ngưng tim do hạ Kali máu.</p>
-                    <p>3. <b>Bicarbonate:</b> Chỉ cân nhắc khi pH < 7.1 hoặc mất kiềm trực tiếp (tiêu chảy).</p>`;
+                subtitle = "Cơ chế: Do cơ thể mất kiềm (HCO3-) qua thận/tiêu hóa hoặc do sản sinh quá nhiều axit cố định (Lactic, Ceton).";
+                organs = renderOrgans(
+                    "🫀 Hệ Tim Mạch: pH < 7.1 gây loạn nhịp tim nguy hiểm. Giãn mạch ngoại vi dẫn đến tụt huyết áp kéo dài.",
+                    "🫁 Hệ Hô Hấp: Kích thích trung tâm hô hấp tạo kiểu thở Kussmaul (nhanh và rất sâu) để cố thải CO2 bù trừ.",
+                    "🩸 Điện giải: Hiện tượng 'H+ vào tế bào, K+ ra ngoài' gây tăng Kali máu giả tạo, đe dọa ngưng tim.",
+                    "🦴 Hệ Xương: Toan mạn tính làm xương mất khoáng chất do giải phóng Canxi-Carbonat để đệm cho máu."
+                );
+                deep = `<h3>📘 Giảng giải xử trí chuyên sâu</h3>
+                        <p>Dành cho người mới: Phải tìm nguyên nhân gây ra axit (Sốc? Tiểu đường? Hay suy thận?).</p>
+                        <div class="step-box">
+                            <b>1. Tính Anion Gap:</b> Để xem toan này là do thêm axit lạ (Sốc, ngộ độc) hay do mất kiềm (Tiêu chảy).<br>
+                            <b>2. Bù dịch và Kali:</b> Khi pH bắt đầu tăng lên, Kali sẽ chạy ngược vào tế bào. Phải bù Kali sớm nếu không bệnh nhân sẽ bị liệt cơ, ngưng tim do hạ Kali.<br>
+                            <b>3. Bicarbonat:</b> Chỉ dùng khi pH cực thấp (< 7.1) và có bằng chứng mất kiềm rõ rệt.
+                        </div>`;
             }
         } else if (ph > 7.45) {
-            document.getElementById('node-alk').classList.add('active-node');
+            document.getElementById('box-alk').classList.add('active-node');
             if (co2 < 35) {
-                document.getElementById('node-rk').classList.add('active-node');
                 title = "KIỀM HÔ HẤP (Respiratory Alkalosis)";
-                organs = createOrganHtml("🧠 Não: Co mạch não, gây chóng mặt, ngất.", "⚡ Thần kinh: Hạ Canxi (Ca++) ion hóa gây tê bì.", "🫀 Tim: Tăng nhịp tim, co thắt mạch vành.", "🧪 Máu: Giảm cung cấp Oxy cho mô.");
-                treats = `<h3>🎯 Xử trí chuyên sâu:</h3>
-                    <p>1. <b>Kiểm soát:</b> Trấn an tâm lý, giảm đau, hạ sốt. Nếu thở máy, hãy giảm tần số hoặc Vt.</p>
-                    <p>2. <b>Điện giải:</b> Bù Magie và Canxi nếu có dấu hiệu co quắp tay chân (Tetany).</p>`;
+                subtitle = "Cơ chế: Do tăng thông khí quá mức, phổi đào thải quá nhiều CO2 khiến nồng độ axit trong máu giảm mạnh.";
+                organs = renderOrgans(
+                    "🧠 Hệ Thần Kinh: Kiềm máu gây co mạch não, làm giảm tưới máu não dẫn đến chóng mặt và ngất.",
+                    "⚡ Thần kinh cơ: Hạ Canxi ion hóa (do Canxi gắn mạnh vào Albumin khi máu kiềm) gây dấu hiệu Tetany (co quắp tay chân).",
+                    "🫀 Hệ Tim Mạch: Gây loạn nhịp nhĩ và thất, đặc biệt nguy hiểm ở người có bệnh mạch vành.",
+                    "🧪 Chuyển hóa: Giảm nồng độ Kali và Photpho trong máu do chúng đi vào nội bào."
+                );
+                deep = `<h3>📘 Giảng giải xử trí chuyên sâu</h3>
+                        <p>Dành cho người mới: Đa số là do tâm lý (lo âu) hoặc đau đớn khiến bệnh nhân thở quá nhanh.</p>
+                        <div class="step-box">
+                            <b>1. Trấn an và giảm đau:</b> Giúp bệnh nhân thở chậm lại. Có thể cho thở vào túi giấy để hít lại CO2 đã mất.<br>
+                            <b>2. Điều chỉnh máy thở:</b> Nếu do bác sĩ cài máy quá cao, cần giảm tần số thở ngay.<br>
+                            <b>3. Bù điện giải:</b> Kiểm tra và bù Canxi nếu bệnh nhân bị co quắp tay (dấu hiệu Trousseau).
+                        </div>`;
             } else {
-                document.getElementById('node-mk').classList.add('active-node');
                 title = "KIỀM CHUYỂN HÓA (Metabolic Alkalosis)";
-                organs = createOrganHtml("🫁 Phổi: Thở chậm để giữ CO2 (nguy cơ thiếu Oxy).", "🫀 Tim: Dễ loạn nhịp nhĩ/thất do hạ Kali.", "🧬 Thận: Giữ H+, thải bớt kiềm (nếu đủ Clo).", "🧠 Não: Lú lẫn, giảm ngưỡng co giật.");
-                treats = `<h3>🎯 Xử trí chuyên sâu:</h3>
-                    <p>1. <b>Ngừng lợi tiểu:</b> Ngừng ngay Furosemide vì nó gây mất Clo và H+ làm kiềm nặng hơn.</p>
-                    <p>2. <b>Bù dịch:</b> Truyền <span class='highlight'>NaCl 0.9%</span> (cung cấp Clo) là chìa khóa để thận thải Bicarbonate dư thừa.</p>
-                    <p>3. <b>Thuốc:</b> Cân nhắc Acetazolamide (Diamox) để thải kiềm qua thận nếu quá tải dịch.</p>`;
+                subtitle = "Cơ chế: Do mất axit qua dạ dày (nôn) hoặc thận (dùng lợi tiểu), hoặc do đưa quá nhiều kiềm vào cơ thể.";
+                organs = renderOrgans(
+                    "🫁 Hệ Hô Hấp: Cơ thể phản ứng bằng cách thở chậm lại để giữ CO2. Điều này có thể gây thiếu Oxy máu.",
+                    "🫀 Hệ Tim Mạch: Rất dễ gây loạn nhịp do hạ Kali và Magie đi kèm.",
+                    "🧠 Hệ Thần Kinh: Gây lú lẫn, lơ mơ và đôi khi là co giật ở người già.",
+                    "🧬 Hệ Thận: Thận cố thải HCO3- nhưng bị cản trở nếu bệnh nhân bị thiếu Clo (do nôn hoặc lợi tiểu)."
+                );
+                deep = `<h3>📘 Giảng giải xử trí chuyên sâu</h3>
+                        <p>Dành cho người mới: Chìa khóa là Clo và Kali.</p>
+                        <div class="step-box">
+                            <b>1. Ngừng Lợi tiểu:</b> Ngừng ngay Furosemide vì thuốc này ép thận thải Clo và giữ Kiềm.<br>
+                            <b>2. Truyền dịch Muối đẳng trương (NaCl 0.9%):</b> Clo trong nước muối giúp thận 'mở cửa' để thải HCO3- dư thừa ra ngoài.<br>
+                            <b>3. Bù Kali:</b> Luôn đi kèm hạ Kali. Dùng KCl là lựa chọn số 1.
+                        </div>`;
             }
         } else {
-            title = "CHỈ SỐ TRONG GIỚI HẠN BÌNH THƯỜNG";
-            organs = "<p>Chưa phát hiện rối loạn cấp tính. Tiếp tục theo dõi lâm sàng.</p>";
-            treats = "";
+            title = "TRẠNG THÁI CÂN BẰNG";
+            subtitle = "Các chỉ số hiện tại nằm trong ngưỡng sinh lý bình thường.";
+            organs = "<p>Hệ thống đệm và các cơ quan (Phổi, Thận) đang hoạt động hiệu quả để duy trì hằng định nội môi.</p>";
+            deep = "<h3>📘 Lưu ý lâm sàng</h3><p>Dù pH bình thường, nhưng nếu PaCO2 và HCO3- đều biến đổi, có thể bệnh nhân đang có một <b>Rối loạn hỗn hợp</b> đã được bù trừ hoàn toàn. Cần đánh giá thêm lâm sàng của bệnh nhân.</p>";
         }
 
-        document.getElementById('diag-res').innerText = title;
-        document.getElementById('organ-res').innerHTML = organs;
-        document.getElementById('treat-res').innerHTML = treats;
+        document.getElementById('diagTitle').innerText = title;
+        document.getElementById('diagSubtitle').innerText = subtitle;
+        document.getElementById('organAnalysis').innerHTML = organs;
+        document.getElementById('deepDiveArea').innerHTML = deep;
     }
 
-    function createOrganHtml(b, h, l, k) {
-        return `<div class='organ-card'><h4>🧠 HỆ THẦN KINH</h4>${b}</div>
-                <div class='organ-card'><h4>🫀 HỆ TIM MẠCH</h4>${h}</div>
-                <div class='organ-card'><h4>🫁 HỆ HÔ HẤP</h4>${l}</div>
-                <div class='organ-card'><h4>🧬 THẬN & MÁU</h4>${k}</div>`;
+    function renderOrgans(b, h, l, k) {
+        return `<div class="organ-item"><h4>🧠 Não & Thần kinh</h4><p>${b}</p></div>
+                <div class="organ-item"><h4>🫀 Tim mạch & Máu</h4><p>${h}</p></div>
+                <div class="organ-item"><h4>🫁 Hô hấp</h4><p>${l}</p></div>
+                <div class="organ-item"><h4>🧬 Thận & Chuyển hóa</h4><p>${k}</p></div>`;
     }
 </script>
-
 </body>
 </html>
